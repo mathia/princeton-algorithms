@@ -9,24 +9,53 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 */
 public class Percolation {
 	private int size;
+	private WeightedQuickUnionUF grid;
 	private boolean[] openSites;
 	private int openSiteCount = 0;
+	private int virtualTopIndex, virtualBottomIndex;
 
 	/**
 	 *  create an n-by-n grid, with all sites blocked
 	 */
 	public Percolation(int n) {
+		if (n <= 0) {
+			throw new java.lang.IllegalArgumentException("Invalid grid size.  Must be greater than zero.");
+		}
 		size = n;
-		openSites = new boolean[size + 2];
+		grid = new WeightedQuickUnionUF(size * size + 2);  // n x n grid plus 2 sites for the virtual top and bottom.  grid[0] is the virtual top and grid[size + 1] is the virtual bottom.
+		virtualTopIndex = 0;
+		virtualBottomIndex = size * size + 1;
+		openSites = new boolean[size * size + 1];  // Adding and additional element to allow the index of the first site to be 1 as  is done with grid.
 	}
 
 	/**
 	 * open site (row, col) if it is not open already
       	 */
-	private void open (int row, int col) {
+	public void open (int row, int col) {
 		validateRowCol(row, col);
 		openSites[rowColToIndex(row, col)] = true;
 		openSiteCount++;
+		// If in the top row, connect to the virtual top
+		if (row == 1) {
+			grid.union(virtualTopIndex, rowColToIndex(row, col));
+		}
+		// If in the bottom row, connect to the virtual bottom
+		if (row == size) {
+			grid.union(virtualBottomIndex, rowColToIndex(row, col));
+		}
+		// Connect to any adjacent open sites
+		if (row > 1 && isOpen(row - 1, col)) {
+			grid.union(rowColToIndex(row, col), rowColToIndex(row - 1, col));
+		}
+		if (row < size && isOpen(row + 1, col)) {
+			grid.union(rowColToIndex(row, col), rowColToIndex(row + 1, col));
+		}
+		if (col > 1 && isOpen(row, col - 1)) {
+			grid.union(rowColToIndex(row, col), rowColToIndex(row, col - 1));
+		}
+		if (col < size && isOpen(row, col + 1)) {
+			grid.union(rowColToIndex(row, col), rowColToIndex(row, col + 1));
+		}
 	}
     
 	/**
@@ -38,7 +67,7 @@ public class Percolation {
 	}
 	
 	public boolean isFull(int row, int col) { // is site (row, col) full?
-		return true;
+		return grid.connected(virtualTopIndex, rowColToIndex(row, col));
 	}
 	
 	/**
@@ -49,7 +78,7 @@ public class Percolation {
 	}
 	
 	public boolean percolates() { // does the system percolate?
-		return true;
+		return grid.connected(virtualTopIndex, virtualBottomIndex);
 	}
 
 	/**
@@ -57,7 +86,7 @@ public class Percolation {
 	 */
 	private void validateRowCol(int row, int col) {
 		if (row > size || col > size || row < 1 || col < 1) {
-			throw new IndexOutOfBoundsException("Invalid input: Row index out of bounds.");
+			throw new IndexOutOfBoundsException("Invalid input: Index out of bounds.");
 		}
 	}
 
