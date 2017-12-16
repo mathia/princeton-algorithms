@@ -98,14 +98,14 @@ public class Percolation {
         return (row - 1) * size + col;
     }
     
-    public static void main(String[] args) {  //test client
+    public static void main(String[] args) {  
         System.out.println("Creating a 5x5 test grid...");
         Percolation test = new Percolation(5);
         System.out.println("Trying to open site (1, 2)...");
         test.open(1, 2);
         System.out.println("Trying to open site (6, 2)...");
         try {
-            test.open(6,2);
+            test.open(6, 2);
         }
         catch (IndexOutOfBoundsException e) {
             System.out.println("I don't think so!");
