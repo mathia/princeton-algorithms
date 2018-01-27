@@ -4,7 +4,11 @@ import edu.princeton.cs.algs4.StdStats;
 
 public class PercolationStats {
     private double[] thresholds;
-    private static double CONFIDENCE_95 = 1.96;
+    private double mean;
+    private double stddev;
+    private double confidenceLo;
+    private double confidenceHi;
+    private final static double CONFIDENCE_95 = 1.96;
 
     /**
      * perform trials independent experiments on an n-by-n grid
@@ -17,34 +21,38 @@ public class PercolationStats {
         for (int i = 0; i < trials; i++) {
             thresholds[i] = simulation(n);
         }
+	mean = StdStats.mean(thresholds);
+	stddev = StdStats.stddev(thresholds);
+	confidenceLo = mean - (CONFIDENCE_95 * stddev / Math.sqrt(trials));
+	confidenceHi = mean + (CONFIDENCE_95 * stddev / Math.sqrt(trials));
     }
 
     /**
      * sample mean of percolation threshold
      */
     public double mean() {
-        return StdStats.mean(thresholds);
+        return mean;
     }
 
     /**
      * sample standard deviation of percolation threshold
      */
     public double stddev() {
-        return StdStats.stddev(thresholds);
+        return stddev;
     }
 
     /**
      * // low  endpoint of 95% confidence interval
      */
     public double confidenceLo() {
-        return mean() - (CONFIDENCE_95 * stddev() / Math.sqrt(thresholds.length));
+        return confidenceLo;
     }
 
     /**
      * high endpoint of 95% confidence interval
      */
     public double confidenceHi() {
-        return mean() + (CONFIDENCE_95 * stddev() / Math.sqrt(thresholds.length));
+        return confidenceHi;
     }
 
     private double simulation(int n) {
